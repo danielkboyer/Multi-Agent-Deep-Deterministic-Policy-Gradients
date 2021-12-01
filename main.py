@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     
     #scenario = 'simple'
-    scenario = 'simple_adversary'
+    scenario = 'food_compete'
     env = make_env(scenario)
     n_agents = env.n
     actor_dims = []
@@ -33,7 +33,6 @@ if __name__ == '__main__':
                         n_actions, n_agents, batch_size=1024)
     PRINT_INTERVAL = 50
     N_GAMES = 50000
-    MAX_STEPS = 25
     total_steps = 0
     score_history = []
     evaluate = False
@@ -60,8 +59,7 @@ if __name__ == '__main__':
             state = obs_list_to_state_vector(obs)
             state_ = obs_list_to_state_vector(obs_)
 
-            if episode_step >= MAX_STEPS:
-                done = [True]*n_agents
+           
 
             memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 

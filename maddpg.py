@@ -51,39 +51,46 @@ class MADDPG:
         states_ = T.tensor(states_, dtype=T.float).to(device)
         dones = T.tensor(dones).to(device)
 
-        all_agents_new_actions = []
-        all_agents_new_mu_actions = []
-        old_agents_actions = []
+       
+
+       
 
         for agent_idx, agent in enumerate(self.agents):
-            new_states = T.tensor(actor_new_states[agent_idx], 
-                                 dtype=T.float).to(device)
+            
+            all_agents_new_actions = []
+            all_agents_new_mu_actions = []
+            old_agents_actions = []
+            for agent_idx, agent in enumerate(self.agents):
+                new_states = T.tensor(actor_new_states[agent_idx], 
+                                    dtype=T.float).to(device)
 
-            new_pi = agent.target_actor.forward(new_states)
+                new_pi = agent.target_actor.forward(new_states)
 
-            #the target actors decision for the new states
-            all_agents_new_actions.append(new_pi)
-            mu_states = T.tensor(actor_states[agent_idx], 
-                                 dtype=T.float).to(device)
-            pi = agent.actor.forward(mu_states)
-            #all of the actors choices for the current actor states
-            all_agents_new_mu_actions.append(pi)
-            #What the agent chose before
-            old_agents_actions.append(actions[agent_idx])
+                #the target actors decision for the new states
+                all_agents_new_actions.append(new_pi)
+                mu_states = T.tensor(actor_states[agent_idx], 
+                                    dtype=T.float).to(device)
+                pi = agent.actor.forward(mu_states)
+                #all of the actors choices for the current actor states
+                all_agents_new_mu_actions.append(pi)
+                #What the agent chose before
+                old_agents_actions.append(actions[agent_idx])
 
-        #all the actions of the target_actor for new states
-        new_actions = T.cat([acts for acts in all_agents_new_actions], dim=1)
-        #all the actions of the actor for current states
-        mu = T.cat([acts for acts in all_agents_new_mu_actions], dim=1)
-        #what the agent chose before 
-        old_actions = T.cat([acts for acts in old_agents_actions],dim=1)
+            #all the actions of the target_actor for new states
+            new_actions = T.cat([acts for acts in all_agents_new_actions], dim=1)
+            #all the actions of the actor for current states
+            mu = T.cat([acts for acts in all_agents_new_mu_actions], dim=1)
+            #what the agent chose before 
+            old_actions = T.cat([acts for acts in old_agents_actions],dim=1)
 
-        for agent_idx, agent in enumerate(self.agents):
             #clear gradients
             agent.target_critic.optimizer.zero_grad()
             agent.critic.optimizer.zero_grad()
             agent.actor.optimizer.zero_grad()
+
             
+
+
 
             #forward passes
             target_critic_value = agent.target_critic.forward(states_,new_actions).flatten()
@@ -98,7 +105,6 @@ class MADDPG:
             #optimizer step
             agent.critic.optimizer.step()
             
-
 
             #forward passes
             #mu: actions for current states according to the actor network
