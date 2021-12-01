@@ -47,6 +47,7 @@ class ActorNetwork(nn.Module):
     def forward(self, state):
         x = F.relu(self.fc1(state))
         x = F.relu(self.fc2(x))
+        #changes the tensor to values between [0,1] scaled appropiately
         pi = T.softmax(self.pi(x), dim=1)
 
         return pi

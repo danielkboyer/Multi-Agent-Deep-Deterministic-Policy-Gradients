@@ -80,35 +80,35 @@ class MADDPG:
 
         for agent_idx, agent in enumerate(self.agents):
             #clear gradients
-            for param in agent.target_critic.parameters():
-                param.grad = None
-            for param in agent.critic.parameters():
-                param.grad = None
-            for param in agent.actor.parameters():
-                param.grad = None
-
-            
-            
-            
+            agent.target_critic.optimizer.zero_grad()
+            agent.critic.optimizer.zero_grad()
+            agent.actor.optimizer.zero_grad()
             
 
             #forward passes
             target_critic_value = agent.target_critic.forward(states_,new_actions).flatten()
             critic_value = agent.critic.forward(states,old_actions).flatten()
 
-            actor_value = agent.critic.forward(states, mu).flatten()
             #compute new q_targets
             critic_target = rewards[:,agent_idx] + agent.gamma * target_critic_value
             #compute loss
             critic_loss = F.mse_loss(critic_target,critic_value)
-            actor_loss = -T.mean(actor_value)
             #backward pass
-            actor_loss.backward()
             critic_loss.backward()
             #optimizer step
             agent.critic.optimizer.step()
-            agent.actor.optimizer.step()
             
+
+
+            #forward passes
+            #mu: actions for current states according to the actor network
+            actor_value = agent.critic.forward(states, mu).flatten()
+            #compute loss
+            actor_loss = -T.mean(actor_value)
+            #backward pass
+            actor_loss.backward()
+            #optimizer step
+            agent.actor.optimizer.step()
            
 
             agent.update_network_parameters()
