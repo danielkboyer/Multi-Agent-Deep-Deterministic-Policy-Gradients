@@ -5,6 +5,8 @@ class Agent:
     def __init__(self, actor_dims, critic_dims, n_actions, n_agents, agent_idx, chkpt_dir,
                     alpha=0.01, beta=0.01, fc1=64, 
                     fc2=64, gamma=0.95, tau=0.01):
+
+        
         self.gamma = gamma
         self.tau = tau
         self.n_actions = n_actions
@@ -22,12 +24,19 @@ class Agent:
                                             chkpt_dir=chkpt_dir,
                                             name=self.agent_name+'_target_critic')
 
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+ 
+      
+        self.actor.to(self.device)
+        self.critic.to(self.device)
+        self.target_actor.to(self.device)
+        self.target_critic.to(self.device)
         self.update_network_parameters(tau=1)
 
     def choose_action(self, observation):
-        state = T.tensor([observation], dtype=T.float).to(self.actor.device)
+        state = T.tensor([observation], dtype=T.float).to(self.device)
         actions = self.actor.forward(state)
-        noise = T.rand(self.n_actions).to(self.actor.device)
+        noise = T.rand(self.n_actions).to(self.device)
         action = actions + noise
 
         return action.detach().cpu().numpy()[0]

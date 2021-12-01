@@ -2,6 +2,8 @@ import numpy as np
 from maddpg import MADDPG
 from buffer import MultiAgentReplayBuffer
 from make_env import make_env
+import time
+import graph as g
 
 def obs_list_to_state_vector(observation):
     state = np.array([])
@@ -10,6 +12,8 @@ def obs_list_to_state_vector(observation):
     return state
 
 if __name__ == '__main__':
+
+    
     #scenario = 'simple'
     scenario = 'simple_adversary'
     env = make_env(scenario)
@@ -18,18 +22,16 @@ if __name__ == '__main__':
     for i in range(n_agents):
         actor_dims.append(env.observation_space[i].shape[0])
     critic_dims = sum(actor_dims)
-
     # action space is a list of arrays, assume each agent has same action space
     n_actions = env.action_space[0].n
     maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=64, fc2=64,  
                            alpha=0.01, beta=0.01, scenario=scenario,
-                           chkpt_dir='tmp/maddpg/')
+                           chkpt_dir='C:/Users/dedaq/Documents/MADDPGV2/Multi-Agent-Deep-Deterministic-Policy-Gradients/tmp/maddpg/')
 
     memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
                         n_actions, n_agents, batch_size=1024)
-
-    PRINT_INTERVAL = 500
+    PRINT_INTERVAL = 50
     N_GAMES = 50000
     MAX_STEPS = 25
     total_steps = 0
@@ -37,6 +39,9 @@ if __name__ == '__main__':
     evaluate = False
     best_score = 0
 
+    #graph variables
+    episodeListG = []
+    avgScoreListG = []
     if evaluate:
         maddpg_agents.load_checkpoint()
 
@@ -48,7 +53,7 @@ if __name__ == '__main__':
         while not any(done):
             if evaluate:
                 env.render()
-                #time.sleep(0.1) # to slow down the action for the video
+                time.sleep(0.1) # to slow down the action for the video
             actions = maddpg_agents.choose_action(obs)
             obs_, reward, done, info = env.step(actions)
 
@@ -76,4 +81,8 @@ if __name__ == '__main__':
                 maddpg_agents.save_checkpoint()
                 best_score = avg_score
         if i % PRINT_INTERVAL == 0 and i > 0:
+            episodeListG.append(i)
+            avgScoreListG.append(avg_score)
             print('episode', i, 'average score {:.1f}'.format(avg_score))
+            if not evaluate:
+                g.save_avg_graph(episodeListG,avgScoreListG)
