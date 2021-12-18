@@ -67,14 +67,14 @@ class Agent:
 
         self.target_critic.load_state_dict(critic_state_dict)
 
-    def save_models(self):
-        self.actor.save_checkpoint()
-        self.target_actor.save_checkpoint()
-        self.critic.save_checkpoint()
-        self.target_critic.save_checkpoint()
+    def save_models(self,good,name):
+        self.actor.save_checkpoint(good,name)
+        self.target_actor.save_checkpoint(good,name)
+        self.critic.save_checkpoint(good,name)
+        self.target_critic.save_checkpoint(good,name)
 
-    def load_models(self):
-        self.actor.load_checkpoint()
-        self.target_actor.load_checkpoint()
-        self.critic.load_checkpoint()
-        self.target_critic.load_checkpoint()
+    def load_models(self,good,name):
+        self.actor.load_checkpoint(good,name)
+        self.target_actor.load_checkpoint(good,name)
+        self.critic.load_checkpoint(good,name)
+        self.target_critic.load_checkpoint(good,name)

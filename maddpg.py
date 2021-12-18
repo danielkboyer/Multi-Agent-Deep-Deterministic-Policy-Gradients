@@ -7,7 +7,7 @@ ctypes.cdll.LoadLibrary('caffe2_nvrtc.dll')
 class MADDPG:
     def __init__(self, actor_dims, critic_dims, n_agents, n_actions, 
                  scenario='simple',  alpha=0.01, beta=0.01, fc1=64, 
-                 fc2=64, gamma=0.99, tau=0.01, chkpt_dir='tmp/maddpg/'):
+                 fc2=64, gamma=0.95, tau=0.01, chkpt_dir='tmp/maddpg/'):
         self.agents = []
         self.n_agents = n_agents
         self.n_actions = n_actions
@@ -15,18 +15,18 @@ class MADDPG:
         for agent_idx in range(self.n_agents):
             self.agents.append(Agent(actor_dims[agent_idx], critic_dims,  
                             n_actions, n_agents, agent_idx, alpha=alpha, beta=beta,
-                            chkpt_dir=chkpt_dir))
+                            chkpt_dir=chkpt_dir,gamma=gamma,fc1=fc1,fc2=fc2,tau=tau))
 
 
-    def save_checkpoint(self):
-        print('... saving checkpoint ...')
+    def save_checkpoint(self,good,name):
+        print(f'... saving checkpoint {"good" if good else "bad"} ...')
         for agent in self.agents:
-            agent.save_models()
+            agent.save_models(good,name)
 
-    def load_checkpoint(self):
-        print('... loading checkpoint ...')
+    def load_checkpoint(self,good,name):
+        print(f'... loading checkpoint {"good" if good else "bad"} ...')
         for agent in self.agents:
-            agent.load_models()
+            agent.load_models(good,name)
 
     def choose_action(self, raw_obs):
         actions = []
